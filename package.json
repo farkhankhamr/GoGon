@@ -1,5 +1,5 @@
 {
-    "name": "bisik-monorepo",
+    "name": "gogon-monorepo",
     "version": "1.0.0",
     "description": "Root package to handle Glitch deployment for Server",
     "scripts": {

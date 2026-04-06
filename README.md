@@ -1,18 +1,19 @@
 ---
-title: Bisik Server
-emoji: 🤫
-colorFrom: purple
-colorTo: pink
+title: GoGon Server
+emoji: 🗣️
+colorFrom: yellow
+colorTo: orange
 sdk: docker
 pinned: false
 ---
 
-# Bisik Backend API
+# GoGon Backend API
 
-Anonymous confession & nearby intel platform.
+Anonymous hyperlocal community platform.
 
-## Endpoints
-- `GET /posts` - Feed
-- `POST /posts` - Create post
-- `GET /intel` - Nearby Intel
-- `POST /intel` - Submit Intel
+## Stack
+- **Backend:** Node.js + Fastify + MongoDB
+- **Frontend:** React + Vite (served separately)
+
+## Deployment
+This server is auto-deployed to Hugging Face Spaces via GitHub Actions on every push to `main`.

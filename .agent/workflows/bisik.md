@@ -1,5 +1,5 @@
 ---
-description: Start the full Bisik stack (Mongo, Server, Client)
+description: Start the full GoGon stack (Mongo, Server, Client)
 ---
 
 This workflow starts the MongoDB database, the Backend Server, and the Frontend Client.

@@ -33,7 +33,7 @@ const intelPostSchema = new mongoose.Schema({
     // Geospatial for finding nearby intel (actual search)
     location: {
         type: { type: String, enum: ['Point'], default: 'Point' },
-        coordinates: { type: [Number], required: false } // [long, lat]
+        coordinates: { type: [Number], index: '2dsphere' } // [longitude, latitude]
     },
 
     // Timestamps
@@ -73,9 +73,6 @@ const intelPostSchema = new mongoose.Schema({
         }
     }
 });
-
-// Enable 2dsphere index for location search
-intelPostSchema.index({ location: '2dsphere' });
 
 // Compound index for efficient querying
 intelPostSchema.index({ city: 1, status: 1, created_at: -1 });

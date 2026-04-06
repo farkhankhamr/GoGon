@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { Tag, MapPin, Bookmark, ExternalLink, Flag } from 'lucide-react';
+import { Tag, MapPin, Bookmark, Flag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
 import useFeedStore from '../store/feedStore';
 import useUserStore from '../store/userStore';
+import Avatar from './Avatar';
 
 export default function DealCard({ intel }) {
     const { interactIntel, reportContent } = useFeedStore();
     const { anonId } = useUserStore();
-
-    // We can't really track local state perfectly for optimistic without more complexity
-    // But let's use the intel.metrics values
-    const [isSaved, setIsSaved] = useState(false); // Local toggle state for immediate feedback
+    const [isSaved, setIsSaved] = useState(false);
 
     const handleSave = async (e) => {
         e.stopPropagation();
@@ -22,7 +20,6 @@ export default function DealCard({ intel }) {
     const handleDirection = async (e) => {
         e.stopPropagation();
         await interactIntel(intel.intel_id, 'direction_click');
-        // In H5 MVP, this might open Google Maps search with "near me" or just do nothing visual yet
         window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(intel.content + ' ' + intel.city)}`, '_blank');
     };
 
@@ -32,33 +29,38 @@ export default function DealCard({ intel }) {
                 : '48 Jam';
 
     return (
-        <div className="bg-white border-b border-emerald-100 p-4 hover:bg-emerald-50/10 transition-colors">
-            {/* Header / Meta */}
-            <div className="flex items-center gap-2 mb-2">
-                <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
-                    <Tag size={10} /> Deal
-                </span>
-                <span className="text-[10px] text-slate-400">
-                    {intel.distance_bucket || 'Nearby'} • {formatDistanceToNow(new Date(intel.created_at), { addSuffix: true, locale: id })}
-                </span>
-                <span className="text-[10px] text-emerald-600 font-medium ml-auto">
-                    Berlaku: {validUntil}
-                </span>
-            </div>
+        <div className="flex gap-3 px-4 py-3">
+            {/* Avatar */}
+            <Avatar anonId={intel.anon_id} gender={null} />
 
-            {/* Content */}
-            <div className="mb-3">
-                <p className="text-sm text-slate-800 leading-relaxed font-medium">
-                    {intel.content}
-                </p>
-            </div>
+            {/* Card content */}
+            <div className="flex-1 min-w-0">
+                {/* Header / Meta */}
+                <div className="flex items-center gap-2 mb-1.5">
+                    <span className="bg-[#E040FB]/10 text-[#E040FB] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
+                        <Tag size={10} /> Deal
+                    </span>
+                    <span className="text-[10px] text-[#8C8476]" style={{ fontFamily: 'Courier Prime, monospace' }}>
+                        {intel.distance_bucket || 'Nearby'} • {formatDistanceToNow(new Date(intel.created_at), { addSuffix: true, locale: id })}
+                    </span>
+                    <span className="text-[10px] text-[#E040FB] font-bold ml-auto" style={{ fontFamily: 'Courier Prime, monospace' }}>
+                        Berlaku: {validUntil}
+                    </span>
+                </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-between">
-                <div className="flex gap-2">
+                {/* Dashed border card for content */}
+                <div className="card-dashed px-3 py-2.5 mb-1.5">
+                    <p className="text-sm font-bold leading-relaxed" style={{ color: '#2A241D', fontFamily: 'Courier Prime, monospace' }}>
+                        {intel.content}
+                    </p>
+                </div>
+
+                {/* Actions row */}
+                <div className="flex items-center gap-2 px-1">
                     <button
                         onClick={handleSave}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition ${isSaved ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition ${isSaved ? 'bg-[#1E1E1E] text-[#F5EFE8]' : 'bg-[#EDE5DC] text-[#8C8476] hover:bg-[#D4C8BC]'}`}
+                        style={{ fontFamily: 'Courier Prime, monospace' }}
                     >
                         <Bookmark size={14} className={isSaved ? 'fill-current' : ''} />
                         {isSaved ? 'Disimpan' : 'Simpan'}
@@ -67,32 +69,28 @@ export default function DealCard({ intel }) {
 
                     <button
                         onClick={handleDirection}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition"
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-[#EDE5DC] text-[#5A4E3D] hover:bg-[#D4C8BC] transition"
+                        style={{ fontFamily: 'Courier Prime, monospace' }}
                     >
                         <MapPin size={14} />
                         Arah
                     </button>
-                </div>
 
-                {/* Report (subtle) */}
-                <button
-                    className="text-slate-300 hover:text-red-400 transition"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // Ideally open report modal, for MVP simple prompt or direct call
-                        const reason = prompt("Lapor intel ini? (spam/hoax)");
-                        if (reason) reportContent(intel.intel_id, 'INTEL', reason, anonId);
-                    }}
-                >
-                    <Flag size={14} />
-                </button>
+                    <div className="flex-1" />
+
+                    {/* Report */}
+                    <button
+                        className="text-[#D4C8BC] hover:text-red-400 transition"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const reason = prompt("Lapor intel ini? (spam/hoax)");
+                            if (reason) reportContent(intel.intel_id, 'INTEL', reason, anonId);
+                        }}
+                    >
+                        <Flag size={14} />
+                    </button>
+                </div>
             </div>
-
-            {intel.metrics.saves === 0 && !isSaved && (
-                <div className="mt-2 text-[10px] text-slate-400 italic">
-                    Belum ada yang simpan — kamu duluan?
-                </div>
-            )}
         </div>
     );
 }

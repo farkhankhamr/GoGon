@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import useUserStore from './store/userStore';
+import useConfigStore from './store/configStore';
 import Onboarding from './pages/Onboarding';
 import Feed from './pages/Feed';
 import Chat from './pages/Chat';
+import CommentsDetail from './pages/CommentsDetail';
+import AdminDashboard from './pages/AdminDashboard';
 
 function ProtectedRoute({ children }) {
     const { anonId, city } = useUserStore(state => ({
@@ -19,11 +22,25 @@ function ProtectedRoute({ children }) {
     return children;
 }
 
+// Layout for the mobile app experience
+const MobileLayout = () => (
+    <div className="max-w-md mx-auto min-h-screen shadow-2xl overflow-hidden relative" style={{ backgroundColor: '#F5EFE8', fontFamily: 'Courier Prime, monospace' }}>
+        <Outlet />
+    </div>
+);
+
 export default function App() {
+    const fetchSettings = useConfigStore(state => state.fetchSettings);
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
     return (
         <BrowserRouter>
-            <div className="max-w-md mx-auto min-h-screen bg-white shadow-2xl overflow-hidden relative">
-                <Routes>
+            <Routes>
+                {/* Mobile App Routes */}
+                <Route element={<MobileLayout />}>
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route
                         path="/feed"
@@ -41,10 +58,21 @@ export default function App() {
                             </ProtectedRoute>
                         }
                     />
-                    {/* Default redirect */}
+                    <Route
+                        path="/post/:postId/comments"
+                        element={
+                            <ProtectedRoute>
+                                <CommentsDetail />
+                            </ProtectedRoute>
+                        }
+                    />
+                    {/* Default redirect for unknown routes inside app context */}
                     <Route path="*" element={<Navigate to="/feed" replace />} />
-                </Routes>
-            </div>
+                </Route>
+
+                {/* Admin Dashboard - Full Desktop Width */}
+                <Route path="/admin" element={<AdminDashboard />} />
+            </Routes>
         </BrowserRouter>
     );
 }

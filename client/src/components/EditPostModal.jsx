@@ -21,44 +21,45 @@ export default function EditPostModal({ post, onClose, onSave }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="bg-[#F5EFE8] rounded-2xl p-6 max-w-md w-full border-2 border-[#1E1E1E]" style={{ fontFamily: 'Courier Prime, monospace' }}>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold text-slate-800">Edit Postingan</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                    <h2 className="text-lg font-bold text-[#1E1E1E]">Edit GoGon</h2>
+                    <button onClick={onClose} className="text-[#8C8476]">
                         <X size={20} />
                     </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg mb-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#E040FB] bg-[#E040FB]/10 px-3 py-2 rounded-lg mb-4">
                     <Clock size={14} />
-                    <span>Waktu edit tersisa: {remainingMinutes} menit</span>
+                    <span>Batas edit: {remainingMinutes} menit lagi</span>
                 </div>
 
                 <textarea
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     maxLength={500}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-base focus:ring-2 focus:ring-brand-100 resize-none min-h-[120px] mb-2"
+                    className="w-full bg-white border-2 border-[#D4C8BC] rounded-xl p-3 text-sm focus:border-[#1E1E1E] outline-none resize-none min-h-[120px] mb-2"
+                    style={{ color: '#2A241D' }}
                     placeholder="Edit kontenmu..."
                 />
 
-                <div className="text-xs text-slate-400 text-right mb-4">
+                <div className="text-[10px] font-bold text-[#8C8476] text-right mb-4">
                     {content.length}/500
                 </div>
 
                 <div className="flex gap-2">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition"
+                        className="flex-1 py-3 bg-[#EDE5DC] text-[#5A4E3D] rounded-xl font-bold hover:bg-[#D4C8BC] transition"
                     >
                         Batal
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={!content.trim() || content === post.content || isSubmitting}
-                        className="flex-1 py-3 bg-brand-600 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand-700 transition"
+                        className="flex-1 py-3 bg-[#1E1E1E] text-[#F5EFE8] rounded-xl font-bold disabled:opacity-50 hover:opacity-90 transition"
                     >
-                        {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+                        {isSubmitting ? '...' : 'Simpan'}
                     </button>
                 </div>
             </div>

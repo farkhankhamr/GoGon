@@ -11,6 +11,9 @@ const useUserStore = create(
             occupation: null,
             gender: null,
             location: null, // { lat, long }
+            distanceDisplay: false, // false = city, true = distance
+
+            toggleDistanceDisplay: () => set(state => ({ distanceDisplay: !state.distanceDisplay })),
 
             initUser: (data) => {
                 set((state) => ({
@@ -25,7 +28,7 @@ const useUserStore = create(
             regenerateId: () => set({ anonId: uuidv4() }),
         }),
         {
-            name: 'bisik-user-storage',
+            name: 'gogon-user-storage',
         }
     )
 );

@@ -285,6 +285,42 @@ const useFeedStore = create((set, get) => ({
     // Legacy method shim if needed or just remove usages
     reportPost: async (postId, reason, anonId) => {
         return get().reportContent(postId, 'POST', reason, anonId);
+    },
+
+    // --- Comment Actions ---
+    fetchComments: async (postId) => {
+        try {
+            const res = await fetch(`${API_URL}/posts/${postId}/comments`);
+            if (!res.ok) throw new Error('Failed to fetch comments');
+            return await res.json();
+        } catch (err) {
+            console.error('Fetch comments failed:', err);
+            return [];
+        }
+    },
+
+    addComment: async (postId, content, anonId) => {
+        try {
+            const res = await fetch(`${API_URL}/posts/${postId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content, anon_id: anonId })
+            });
+            if (!res.ok) throw new Error('Failed to post comment');
+            const newComment = await res.json();
+
+            // Increment local comment count if needed (optional since we'll likely re-fetch detail)
+            set(state => ({
+                posts: state.posts.map(p =>
+                    p.post_id === postId ? { ...p, comments_count: (p.comments_count || 0) + 1 } : p
+                )
+            }));
+
+            return newComment;
+        } catch (err) {
+            console.error('Add comment failed:', err);
+            throw err;
+        }
     }
 }));
 

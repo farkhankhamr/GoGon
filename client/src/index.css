@@ -2,21 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
 body {
-    @apply bg-slate-50 text-slate-900;
+    background-color: #F5EFE8;
+    color: #2A241D;
+    font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
 }
 
 @layer utilities {
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
     .animate-typewriter {
         animation: typewriter 2s steps(20) infinite alternate, blink .7s infinite;
+    }
+
+    .animate-slide-down {
+        animation: slideDown 0.2s ease-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .animate-bounce-in {
+        animation: bounceIn 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    .card-dashed {
+        border: 1.5px dashed #333333;
+        border-radius: 12px;
+        background: transparent;
     }
 }
 
 @keyframes typewriter {
-    from { width: 0; }
-    to { width: 100%; }
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
 }
 
 @keyframes blink {
-    50% { border-color: transparent; }
+    50% {
+        border-color: transparent;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }

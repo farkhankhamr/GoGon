@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, User } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import useUserStore from '../store/userStore';
 
 const CITIES = ['Jakarta', 'Bandung', 'Surabaya', 'Yogyakarta', 'Bali', 'Medan'];
@@ -18,10 +18,7 @@ export default function Onboarding() {
     const handleLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    setLocation(pos.coords.latitude, pos.coords.longitude);
-                    // Auto guess city via API could happen here, keeping manual for MVP
-                },
+                (pos) => setLocation(pos.coords.latitude, pos.coords.longitude),
                 (err) => console.error(err)
             );
         }
@@ -31,7 +28,7 @@ export default function Onboarding() {
         if (!selectedCity) return;
         initUser({
             city: selectedCity,
-            institution: null, // Removed institution
+            institution: null,
             gender: selectedGender || null,
             occupation: selectedOccupation || null
         });
@@ -39,34 +36,51 @@ export default function Onboarding() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+        <div className="min-h-screen flex flex-col items-center justify-center p-6"
+            style={{ backgroundColor: '#F5EFE8' }}>
             <div className="max-w-md w-full space-y-6">
-                <div className="text-center">
-                    <h1 className="text-4xl font-bold text-brand-600 mb-2">Bisik</h1>
-                    <p className="text-slate-500">Tempat ngomong jujur, tanpa nama.</p>
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <h1 className="text-5xl font-bold mb-2" style={{ color: '#1E1E1E', fontFamily: 'Courier Prime, monospace' }}>
+                        GoGon
+                    </h1>
+                    <p className="text-sm" style={{ color: '#8C8476', fontFamily: 'Courier Prime, monospace' }}>
+                        Tempat ngomong jujur, tanpa nama.
+                    </p>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-5">
-                    {/* Location Request */}
+                {/* Card */}
+                <div className="bg-white p-6 rounded-2xl space-y-5"
+                    style={{ border: '1px solid #E0D5CA', boxShadow: '0 2px 12px rgba(42,36,29,0.06)' }}>
+
+                    {/* Location */}
                     <button
                         onClick={handleLocation}
-                        className="w-full py-3 border-2 border-dashed border-brand-200 text-brand-600 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-50 transition"
+                        className="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition"
+                        style={{ border: '1.5px dashed #C4B8AC', color: '#7c5a41', fontFamily: 'Courier Prime, monospace' }}
                     >
-                        <MapPin size={18} />
-                        <span>Aktifkan Lokasi (Untuk filter jarak)</span>
+                        <MapPin size={16} />
+                        <span className="text-sm">Aktifkan Lokasi (Untuk filter jarak)</span>
                     </button>
 
+                    {/* City */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Pilih Kota Kamu</label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <label className="block text-xs font-bold mb-2 uppercase tracking-widest"
+                            style={{ color: '#8C8476', fontFamily: 'Courier Prime, monospace' }}>
+                            Pilih Kota Kamu
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
                             {CITIES.map(city => (
                                 <button
                                     key={city}
                                     onClick={() => setSelectedCity(city)}
-                                    className={`p-3 rounded-lg text-sm font-medium transition-all ${selectedCity === city
-                                        ? 'bg-brand-500 text-white shadow-md'
-                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-                                        }`}
+                                    className="p-2.5 rounded-lg text-sm font-medium transition-all"
+                                    style={{
+                                        fontFamily: 'Courier Prime, monospace',
+                                        backgroundColor: selectedCity === city ? '#1E1E1E' : '#F5EFE8',
+                                        color: selectedCity === city ? '#F5EFE8' : '#5A4E3D',
+                                        border: selectedCity === city ? '1px solid #1E1E1E' : '1px solid #D4C8BC',
+                                    }}
                                 >
                                     {city}
                                 </button>
@@ -74,11 +88,21 @@ export default function Onboarding() {
                         </div>
                     </div>
 
+                    {/* Gender & Occupation */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Gender (Opsional)</label>
+                            <label className="block text-xs font-bold mb-2 uppercase tracking-widest"
+                                style={{ color: '#8C8476', fontFamily: 'Courier Prime, monospace' }}>
+                                Gender
+                            </label>
                             <select
-                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm"
+                                className="w-full p-2.5 rounded-lg text-sm border"
+                                style={{
+                                    fontFamily: 'Courier Prime, monospace',
+                                    backgroundColor: '#F5EFE8',
+                                    borderColor: '#D4C8BC',
+                                    color: '#2A241D'
+                                }}
                                 value={selectedGender}
                                 onChange={(e) => setSelectedGender(e.target.value)}
                             >
@@ -89,9 +113,18 @@ export default function Onboarding() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Pekerjaan</label>
+                            <label className="block text-xs font-bold mb-2 uppercase tracking-widest"
+                                style={{ color: '#8C8476', fontFamily: 'Courier Prime, monospace' }}>
+                                Pekerjaan
+                            </label>
                             <select
-                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm"
+                                className="w-full p-2.5 rounded-lg text-sm border"
+                                style={{
+                                    fontFamily: 'Courier Prime, monospace',
+                                    backgroundColor: '#F5EFE8',
+                                    borderColor: '#D4C8BC',
+                                    color: '#2A241D'
+                                }}
                                 value={selectedOccupation}
                                 onChange={(e) => setSelectedOccupation(e.target.value)}
                             >
@@ -103,14 +136,18 @@ export default function Onboarding() {
                         </div>
                     </div>
 
-
-
+                    {/* CTA */}
                     <button
                         onClick={handleStart}
                         disabled={!selectedCity}
-                        className="w-full py-4 bg-brand-600 text-white rounded-xl font-bold shadow-lg shadow-brand-500/30 disabled:opacity-50 disabled:shadow-none hover:bg-brand-700 transition-all"
+                        className="w-full py-4 rounded-xl font-bold text-base transition-all disabled:opacity-40"
+                        style={{
+                            fontFamily: 'Courier Prime, monospace',
+                            backgroundColor: '#1E1E1E',
+                            color: '#F5EFE8',
+                        }}
                     >
-                        Lanjut Sendirian
+                        Mulai GoGon
                     </button>
                 </div>
             </div>

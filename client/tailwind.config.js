@@ -8,15 +8,31 @@ export default {
         extend: {
             colors: {
                 brand: {
-                    50: '#f0f9ff',
-                    100: '#e0f2fe',
-                    500: '#0ea5e9', // Sky blue-ish
-                    600: '#0284c7',
-                    900: '#0c4a6e',
+                    50: '#fdf8f2',
+                    100: '#f5efe8',
+                    200: '#e8d9c8',
+                    300: '#d4b896',
+                    400: '#b8916a',
+                    500: '#9a7356',
+                    600: '#7c5a41',
+                    700: '#5e4230',
+                    800: '#3d2b1e',
+                    900: '#2a1e14',
                 }
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
+                mono: ['Courier Prime', 'Courier New', 'Courier', 'monospace'],
+                sans: ['Courier Prime', 'Courier New', 'Courier', 'monospace'],
+            },
+            colors: {
+                gogon: {
+                    bg: '#F5EFE8',
+                    card: '#FFFFFF',
+                    dark: '#1E1E1E',
+                    text: '#2A241D',
+                    muted: '#8C8476',
+                    border: '#D4C8BC',
+                }
             }
         },
     },

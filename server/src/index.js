@@ -23,6 +23,8 @@ fastify.register(require('./routes/posts'));
 fastify.register(require('./routes/comments'));
 fastify.register(require('./routes/intel'));
 fastify.register(require('./routes/reports'));
+fastify.register(require('./routes/admin'));
+fastify.register(require('./routes/config'));
 
 // Socket.IO Logic
 fastify.ready(err => {

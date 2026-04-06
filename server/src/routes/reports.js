@@ -74,8 +74,18 @@ const reportRoutes = async (fastify, options) => {
 
         // 2. Moderation Action based on Type
         if (target_type === 'POST') {
-            // Regular Post: Delete Immediately (MVP)
-            await Post.deleteOne({ _id: target._id });
+            // Regular Post: Soft Delete (increment reportCount, hide if >= 3)
+            const updatedPost = await Post.findOneAndUpdate(
+                { _id: target._id },
+                { $inc: { reportCount: 1 } },
+                { new: true }
+            );
+
+            // Hide post if report threshold reached
+            if (updatedPost.reportCount >= 3) {
+                updatedPost.status = 'hidden';
+                await updatedPost.save();
+            }
         }
         else if (target_type === 'INTEL') {
             // Intel Post: Update metric + Hide if threshold met
@@ -95,7 +105,7 @@ const reportRoutes = async (fastify, options) => {
 
         return {
             success: true,
-            message: 'Terima kasih. Kami akan cek konten ini agar Bisik tetap aman.'
+            message: 'Terima kasih. Kami akan cek konten ini agar GoGon tetap aman.'
         };
     });
 };

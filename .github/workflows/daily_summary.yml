@@ -1,0 +1,42 @@
+name: Daily Ops Summary
+
+on:
+  schedule:
+    # Run at 23:59 Asia/Jakarta (16:59 UTC)
+    - cron: '59 16 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      dateKey:
+        description: 'Date to generate summary for (YYYY-MM-DD). Leave empty for today.'
+        required: false
+        type: string
+
+jobs:
+  generate-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Daily Summary
+        run: |
+          DATE_KEY="${{ github.event.inputs.dateKey }}"
+          
+          # Call the admin endpoint to trigger summary generation
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Admin-Token: ${{ secrets.ADMIN_TOKEN }}" \
+            -d "{\"dateKey\": \"$DATE_KEY\"}" \
+            "${{ secrets.API_URL }}/admin/run-daily-summary")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Daily summary generation failed with status $HTTP_CODE"
+            exit 1
+          fi
+          
+          echo "::notice::Daily summary generated successfully"

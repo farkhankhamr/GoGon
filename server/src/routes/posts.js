@@ -1,9 +1,11 @@
 const Post = require('../models/Post');
 const PostLike = require('../models/PostLike');
+const PostAudit = require('../models/PostAudit');
 const Report = require('../models/Report');
 const UserBan = require('../models/UserBan');
 
 const { SEED_POSTS } = require('../utils/seed_posts');
+const { analyzeContent } = require('../utils/contentAnalysis');
 
 // Helper to shuffle array
 const shuffle = (array) => {
@@ -132,8 +134,14 @@ const postsRoutes = async (fastify, options) => {
       topic,
       gender,
       occupation,
+      type: 'CURHAT', // Default type for regular posts
       expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000)
     };
+
+    // Run content analysis
+    const analysis = analyzeContent(content);
+    postData.sentiment = analysis.sentiment;
+    postData.topic_tags = analysis.topic_tags;
 
     if (lat && long) {
       postData.location = {
@@ -143,8 +151,35 @@ const postsRoutes = async (fastify, options) => {
     }
 
     const post = new Post(postData);
-
     await post.save();
+
+    // Create immutable audit record for daily summary
+    try {
+      await PostAudit.create({
+        post_id: post.post_id,
+        anon_id_hash: PostAudit.hashAnonId(anon_id),
+        createdAt: post.created_at,
+        createdDateKey: post.createdDateKey,
+        gender: post.gender,
+        city: post.city || 'Unknown',
+        type: post.type,
+        sentiment: post.sentiment,
+        topic_tags: post.topic_tags,
+        metrics_snapshot: {
+          likes: 0,
+          comments_count: 0,
+          saves: 0,
+          ack: 0,
+          direction_clicks: 0,
+          chat_started: 0,
+          chat_accepted: 0
+        }
+      });
+    } catch (auditError) {
+      console.error('Failed to create PostAudit:', auditError.message);
+      // Don't fail the post creation if audit fails
+    }
+
     return post;
   });
 

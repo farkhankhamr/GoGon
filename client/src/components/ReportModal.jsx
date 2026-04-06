@@ -32,15 +32,16 @@ export default function ReportModal({ postId, onClose, onSubmit }) {
     if (showConfirmation) {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-                <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center">
-                    <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <div className="bg-white rounded-2xl p-6 max-w-sm w-full border-2 border-[#1E1E1E]"
+                    style={{ fontFamily: 'Courier Prime, monospace', backgroundColor: '#F5EFE8' }}>
+                    <div className="w-12 h-12 bg-[#1E1E1E] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-6 h-6 text-[#F5EFE8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm font-bold text-[#1E1E1E]">
                         Terima kasih.<br />
-                        Kami akan cek konten ini agar Bisik tetap aman.
+                        Laporan GoGon kami terima.
                     </p>
                 </div>
             </div>
@@ -49,23 +50,23 @@ export default function ReportModal({ postId, onClose, onSubmit }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="bg-[#F5EFE8] rounded-2xl p-6 max-w-md w-full border-2 border-[#1E1E1E]" style={{ fontFamily: 'Courier Prime, monospace' }}>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold text-slate-800">Laporkan Konten</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                    <h2 className="text-lg font-bold text-[#1E1E1E]">Laporkan</h2>
+                    <button onClick={onClose} className="text-[#8C8476]">
                         <X size={20} />
                     </button>
                 </div>
 
-                <p className="text-sm text-slate-600 mb-4">
-                    Pilih alasan pelaporan:
+                <p className="text-xs font-bold text-[#8C8476] mb-4 uppercase tracking-wider">
+                    Pilih alasan:
                 </p>
 
                 <div className="space-y-2 mb-6">
                     {REPORT_REASONS.map(reason => (
                         <label
                             key={reason.id}
-                            className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition"
+                            className={`flex items-center gap-3 p-3 rounded-xl border-2 transition cursor-pointer ${selectedReason === reason.id ? 'bg-white border-[#1E1E1E]' : 'bg-transparent border-[#D4C8BC] hover:border-[#8C8476]'}`}
                         >
                             <input
                                 type="radio"
@@ -73,9 +74,9 @@ export default function ReportModal({ postId, onClose, onSubmit }) {
                                 value={reason.id}
                                 checked={selectedReason === reason.id}
                                 onChange={(e) => setSelectedReason(e.target.value)}
-                                className="text-brand-600 focus:ring-brand-500"
+                                className="w-4 h-4 border-[#D4C8BC] text-[#1E1E1E] focus:ring-[#1E1E1E]"
                             />
-                            <span className="text-sm text-slate-700">{reason.label}</span>
+                            <span className="text-sm font-bold text-[#1E1E1E]">{reason.label}</span>
                         </label>
                     ))}
                 </div>
@@ -83,9 +84,9 @@ export default function ReportModal({ postId, onClose, onSubmit }) {
                 <button
                     onClick={handleSubmit}
                     disabled={!selectedReason || isSubmitting}
-                    className="w-full py-3 bg-orange-600 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-700 transition"
+                    className="w-full py-3 bg-[#1E1E1E] text-[#F5EFE8] rounded-xl font-bold disabled:opacity-50 hover:opacity-90 transition"
                 >
-                    {isSubmitting ? 'Mengirim...' : 'Kirim Laporan'}
+                    {isSubmitting ? '...' : 'Kirim Laporan'}
                 </button>
             </div>
         </div>

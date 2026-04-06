@@ -1,59 +1,33 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, User, Briefcase } from 'lucide-react';
+import { Heart, MessageCircle, MoreHorizontal, MessageSquare } from 'lucide-react';
 import clsx from 'clsx';
 import useFeedStore from '../store/feedStore';
 import useUserStore from '../store/userStore';
-import { formatDistanceToNow } from 'date-fns';
-import { id } from 'date-fns/locale';
+import useConfigStore from '../store/configStore';
+import { format } from 'date-fns';
 import PostActionsMenu from './PostActionsMenu';
 import EditPostModal from './EditPostModal';
 import ReportModal from './ReportModal';
+import Avatar from './Avatar';
 
 export default function PostCard({ post }) {
     const { likePost, editPost, deletePost, reportPost } = useFeedStore();
-    const { anonId } = useUserStore();
+    const { anonId, distanceDisplay, toggleDistanceDisplay } = useUserStore();
+    const { chat_enabled } = useConfigStore(state => state.settings);
     const navigate = useNavigate();
 
     const [showEditModal, setShowEditModal] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    // Detect seed posts
     const isSeed = post.is_seed || post.anon_id === 'SYSTEM_BOT';
 
-    // Format relative time
-    const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: id });
-
-    // Format distance logic
-    const formatDistance = () => {
-        let d = post.distance;
-        if (isSeed || d === undefined) {
-            // Mock distance for seeds or fallback
-            const mocks = [42, 85, 120, 310, 490, 850, 1200, 2400];
-            // Use post_id hash to keep it consistent per post
-            const hash = post.post_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            d = mocks[hash % mocks.length];
-        }
-
-        if (d < 50) return '< 50m';
-        if (d < 100) return '< 100m';
-        if (d < 500) return '< 500m';
-        if (d < 1000) return '< 1km';
-        if (d < 2000) return '< 2km';
-        if (d < 5000) return '< 5km';
-        return '< 10km';
-    };
-    const distanceStr = formatDistance();
-
-    const handleEdit = () => setShowEditModal(true);
-    const handleDelete = () => setShowDeleteConfirm(true);
-    const handleReport = () => setShowReportModal(true);
-
-    const confirmDelete = async () => {
-        await deletePost(post.post_id, anonId);
-        setShowDeleteConfirm(false);
-    };
+    // Format time as HH:mm
+    const timeStr = format(new Date(post.created_at), 'HH:mm');
+    const cityStr = post.city || '—';
+    const distanceStr = post.distance != null ? `${(post.distance / 1000).toFixed(1)} km` : null;
+    const locationDisplay = distanceDisplay ? (distanceStr || cityStr) : cityStr;
 
     const handleEditSave = async (postId, content) => {
         await editPost(postId, content, anonId);
@@ -65,105 +39,81 @@ export default function PostCard({ post }) {
 
     return (
         <>
-            <div className={clsx(
-                "p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors",
-                isSeed ? "bg-slate-50/50" : "bg-white"
-            )}>
-                <div className="flex justify-between items-start mb-2">
-                    <div className="flex flex-wrap gap-2 flex-1">
-                        {/* Distance Chip */}
-                        <span className="bg-slate-100 text-slate-500 px-2 py-1 rounded-full text-[10px] font-bold tracking-tight">
-                            📍 {distanceStr}
-                        </span>
+            <div className="flex gap-3 px-4 py-3">
+                {/* Avatar */}
+                <Avatar anonId={post.anon_id} gender={post.gender} />
 
-                        {/* City Chip - HIDDEN
-                        <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-full text-xs font-semibold">
-                            {post.city}
-                        </span>
-                        */}
-
-                        {/* Institution Chip */}
-                        {post.institution && (
-                            <span className="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full text-xs font-semibold">
-                                {post.institution}
-                            </span>
-                        )}
-
-                        {/* Topic Chip */}
-                        {post.topic && (
-                            <span className="bg-orange-50 text-orange-600 px-2 py-1 rounded-full text-xs font-semibold">
-                                {post.topic}
-                            </span>
-                        )}
-
-                        {/* Gender Chip */}
-                        {post.gender && (
-                            <span className={clsx(
-                                "px-2 py-1 rounded-full text-xs flex items-center gap-1 font-semibold",
-                                post.gender === 'M' && "bg-blue-50 text-blue-600",
-                                post.gender === 'F' && "bg-red-50 text-red-600",
-                                post.gender === 'NB' && "bg-purple-50 text-purple-600"
-                            )}>
-                                <User size={10} /> {post.gender === 'M' ? 'Pria' : post.gender === 'F' ? 'Wanita' : 'NB'}
-                            </span>
-                        )}
-
-                        {/* Occupation Chip - HIDDEN
-                        {post.occupation && (
-                            <span className="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full text-xs flex items-center gap-1 font-semibold">
-                                <Briefcase size={10} /> {post.occupation}
-                            </span>
-                        )}
-                        */}
-
-                        {/* Seed Post Badge - HIDDEN
-                        {isSeed && (
-                            <span className="text-[10px] text-slate-400 px-2 py-0.5 rounded-full bg-slate-100 italic">
-                                Topik pembuka
-                            </span>
-                        )}
-                        */}
+                {/* Card content */}
+                <div className="flex-1 min-w-0">
+                    {/* Dashed border card for content */}
+                    <div className="card-dashed px-3 py-2.5 mb-1.5">
+                        <p className="text-sm leading-relaxed" style={{ color: '#2A241D', fontFamily: 'Courier Prime, monospace' }}>
+                            {post.content}
+                        </p>
                     </div>
 
-                    {/* Actions Menu */}
-                    {!isSeed && (
-                        <PostActionsMenu
-                            post={post}
-                            currentUserId={anonId}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onReport={handleReport}
-                        />
-                    )}
-                </div>
-
-                <p className="text-base text-slate-800 font-medium mb-3 whitespace-pre-wrap">{post.content}</p>
-
-                <div className="flex items-center justify-between text-slate-400 text-sm">
-                    <div className="flex gap-4">
+                    {/* Footer row */}
+                    <div className="flex items-center gap-3 px-1">
+                        {/* Like */}
                         <button
                             onClick={() => likePost(post.post_id)}
-                            className={clsx("flex items-center gap-1 transition-colors", post.has_liked ? "text-red-500" : "hover:text-red-500")}
-                        >
-                            <Heart size={18} className={clsx(post.has_liked && "fill-red-500")} />
-                            <span>{post.likes || 0}</span>
-                            {post.likes === 0 && (
-                                <span className="text-[10px] text-slate-400 ml-1">
-                                    Belum ada yang respon
-                                </span>
+                            className={clsx(
+                                'flex items-center gap-1 text-xs transition-colors',
+                                post.has_liked ? 'text-red-500' : 'text-[#8C8476] hover:text-red-400'
                             )}
-                        </button>
-
-                        <button
-                            onClick={() => navigate(`/chat/${post.post_id}`)}
-                            className="flex items-center gap-1 hover:text-brand-500 transition-colors"
                         >
-                            <MessageCircle size={18} />
-                            <span>Chat</span>
+                            <Heart
+                                size={14}
+                                className={clsx(post.has_liked && 'fill-red-500')}
+                            />
+                            <span>{post.likes || 0}</span>
                         </button>
-                    </div>
 
-                    <span className="text-xs">{timeAgo}</span>
+                        {/* Comment or Chat CTA based on Toggle */}
+                        {chat_enabled ? (
+                            <button
+                                onClick={() => navigate(`/chat/${post.post_id}`)}
+                                className="flex items-center gap-1 text-xs text-[#8C8476] hover:text-indigo-600 transition-colors"
+                            >
+                                <MessageSquare size={14} />
+                                <span>Chat</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => navigate(`/post/${post.post_id}/comments`)}
+                                className="flex items-center gap-1 text-xs text-[#8C8476] hover:text-pink-500 transition-colors"
+                            >
+                                <MessageCircle size={14} />
+                                <span>{post.comments_count || 0}</span>
+                            </button>
+                        )}
+
+                        {/* Spacer */}
+                        <div className="flex-1" />
+
+                        {/* City • time / Distance • time toggle */}
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                toggleDistanceDisplay();
+                            }}
+                            className="text-xs transition-colors hover:text-[#5A4E3D] cursor-pointer"
+                            style={{ color: '#8C8476', fontFamily: 'Courier Prime, monospace' }}
+                        >
+                            {locationDisplay} • {timeStr}
+                        </button>
+
+                        {/* Actions menu */}
+                        {!isSeed && (
+                            <PostActionsMenu
+                                post={post}
+                                currentUserId={anonId}
+                                onEdit={() => setShowEditModal(true)}
+                                onDelete={() => setShowDeleteConfirm(true)}
+                                onReport={() => setShowReportModal(true)}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -184,24 +134,28 @@ export default function PostCard({ post }) {
                 />
             )}
 
-            {/* Delete Confirmation */}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-                    <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
-                        <h3 className="text-lg font-bold text-slate-800 mb-2">Hapus Postingan?</h3>
-                        <p className="text-sm text-slate-600 mb-6">
-                            Postingan ini akan dihapus permanen dan tidak bisa dikembalikan.
+                    <div className="bg-white rounded-2xl p-6 max-w-sm w-full border border-[#E0D5CA]"
+                        style={{ fontFamily: 'Courier Prime, monospace' }}>
+                        <h3 className="text-base font-bold text-[#2A241D] mb-2">Hapus Postingan?</h3>
+                        <p className="text-sm text-[#8C8476] mb-6">
+                            Postingan ini akan dihapus permanen.
                         </p>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setShowDeleteConfirm(false)}
-                                className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition"
+                                className="flex-1 py-3 rounded-xl text-sm font-bold transition"
+                                style={{ backgroundColor: '#F5EFE8', color: '#5A4E3D', border: '1px solid #D4C8BC' }}
                             >
                                 Batal
                             </button>
                             <button
-                                onClick={confirmDelete}
-                                className="flex-1 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+                                onClick={async () => {
+                                    await deletePost(post.post_id, anonId);
+                                    setShowDeleteConfirm(false);
+                                }}
+                                className="flex-1 py-3 rounded-xl text-sm font-bold bg-red-600 text-white transition hover:bg-red-700"
                             >
                                 Hapus
                             </button>

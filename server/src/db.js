@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bisik', {
+        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/gogon', {
             // Mongoose 6+ options are default, but explicitly safe
         });
         console.log(`MongoDB Connected: ${conn.connection.host}`);

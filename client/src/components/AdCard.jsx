@@ -10,42 +10,37 @@ export default function AdCard({ ad }) {
     };
 
     return (
-        <div className="bg-white p-4 border-b border-slate-100">
+        <div className="bg-[#EDE5DC]/30 p-4 border-b border-[#E0D5CA]" style={{ fontFamily: 'Courier Prime, monospace' }}>
             {/* Disponsori Label */}
-            <span className="text-[10px] text-slate-400 block mb-2">
+            <span className="text-[10px] font-bold text-[#8C8476] block mb-2 uppercase tracking-widest">
                 Disponsori
             </span>
 
             {/* Ad Content */}
-            <div className="flex gap-3">
-                {/* Optional Image/Icon */}
-                {ad.image_url && (
-                    <img
-                        src={ad.image_url}
-                        alt=""
-                        className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                    />
-                )}
-
+            <div className="flex gap-4">
                 <div className="flex-1 min-w-0">
                     {/* Headline - 1 line max */}
-                    <h3 className="text-sm font-medium text-slate-800 line-clamp-1 mb-1">
+                    <h3 className="text-sm font-bold text-[#1E1E1E] line-clamp-1 mb-1">
                         {ad.title}
                     </h3>
 
                     {/* Body - 2 lines max */}
-                    <p className="text-xs text-slate-500 line-clamp-2 mb-2">
+                    <p className="text-xs text-[#5A4E3D] line-clamp-2 mb-3 leading-relaxed">
                         {ad.description}
                     </p>
 
-                    {/* Text-only CTA */}
+                    {/* Gogon-styled Button */}
                     <button
                         onClick={handleClick}
-                        className="text-xs text-brand-600 hover:text-brand-700 transition-colors inline-flex items-center gap-1"
+                        className="px-4 py-1.5 bg-[#1E1E1E] text-[#F5EFE8] text-[10px] font-bold rounded-lg hover:opacity-90 transition-all active:scale-95"
                     >
-                        <span>{ad.cta || 'Pelajari'}</span>
-                        <span>→</span>
+                        {ad.cta || 'Pelajari'} →
                     </button>
+                </div>
+
+                {/* Optional Image Placeholder for Gogon Aesthetic */}
+                <div className="w-16 h-16 rounded-xl bg-white border-2 border-[#D4C8BC] flex items-center justify-center flex-shrink-0 text-2xl opacity-50">
+                    💡
                 </div>
             </div>
         </div>

@@ -38,6 +38,7 @@ const PostSchema = new mongoose.Schema({
 
     // Metrics
     likes: { type: Number, default: 0 }, // Keep for backward compatibility
+    comments_count: { type: Number, default: 0 },
     metrics: {
         likes: { type: Number, default: 0 },
         comments_count: { type: Number, default: 0 },

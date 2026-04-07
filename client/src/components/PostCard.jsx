@@ -13,7 +13,7 @@ import Avatar from './Avatar';
 
 export default function PostCard({ post }) {
     const { likePost, editPost, deletePost, reportPost } = useFeedStore();
-    const { anonId, distanceDisplay, toggleDistanceDisplay } = useUserStore();
+    const { anonId, city: userCity } = useUserStore();
     const { chat_enabled } = useConfigStore(state => state.settings);
     const navigate = useNavigate();
 
@@ -23,11 +23,16 @@ export default function PostCard({ post }) {
 
     const isSeed = post.is_seed || post.anon_id === 'SYSTEM_BOT';
 
-    // Format time as HH:mm
+    // Smart Location Display
     const timeStr = format(new Date(post.created_at), 'HH:mm');
-    const cityStr = post.city || '—';
-    const distanceStr = post.distance != null ? `${(post.distance / 1000).toFixed(1)} km` : null;
-    const locationDisplay = distanceDisplay ? (distanceStr || cityStr) : cityStr;
+    const isSameCity = userCity && post.city && userCity.toLowerCase() === post.city.toLowerCase();
+
+    let locationDisplay = post.city || '—';
+    if (isSameCity && post.distance != null) {
+        if (post.distance < 100) locationDisplay = '<100m';
+        else if (post.distance <= 1000) locationDisplay = '100m - 1km';
+        else locationDisplay = '>1km';
+    }
 
     const handleEditSave = async (postId, content) => {
         await editPost(postId, content, anonId);
@@ -46,7 +51,7 @@ export default function PostCard({ post }) {
                 {/* Card content */}
                 <div className="flex-1 min-w-0">
                     {/* Dashed border card for content */}
-                    <div className="card-dashed px-3 py-2.5 mb-1.5">
+                    <div className="card-dashed px-4 py-3 mb-1.5">
                         <p className="text-sm leading-relaxed" style={{ color: '#2A241D', fontFamily: 'Courier Prime, monospace' }}>
                             {post.content}
                         </p>
@@ -91,17 +96,13 @@ export default function PostCard({ post }) {
                         {/* Spacer */}
                         <div className="flex-1" />
 
-                        {/* City • time / Distance • time toggle */}
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                toggleDistanceDisplay();
-                            }}
-                            className="text-xs transition-colors hover:text-[#5A4E3D] cursor-pointer"
+                        {/* Location • time */}
+                        <span
+                            className="text-xs"
                             style={{ color: '#8C8476', fontFamily: 'Courier Prime, monospace' }}
                         >
                             {locationDisplay} • {timeStr}
-                        </button>
+                        </span>
 
                         {/* Actions menu */}
                         {!isSeed && (

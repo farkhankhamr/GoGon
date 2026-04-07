@@ -1,5 +1,7 @@
 import React from 'react';
 
+const ANIMALS = ['🐱', '🐶', '🦊', '🐰', '🐼', '🐨', '🐸', '🦉', '🐢', '🦖', '🐳', '🦅', '🦁', '🐻', '🐒'];
+
 const Avatar = ({ anonId, gender }) => {
     // Hash anonId to a stable number between 1 and 100
     let hash = 0;
@@ -10,21 +12,26 @@ const Avatar = ({ anonId, gender }) => {
     }
     const index = Math.abs(hash) % 100 + 1;
     const avatarUrl = `/avatars/avatar_${index}.svg`;
+    const animalEmoji = ANIMALS[Math.abs(hash) % ANIMALS.length];
 
     const genderSymbol = gender === 'F' ? '♀' : gender === 'M' ? '♂' : null;
     const genderColor = gender === 'F' ? '#E040FB' : gender === 'M' ? '#2196F3' : null;
 
     return (
         <div className="relative flex-shrink-0 self-start">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-white border-2 border-white">
-                <img
-                    src={avatarUrl}
-                    alt="avatar"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                        e.target.style.display = 'none';
-                    }}
-                />
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-white border-2 border-white flex items-center justify-center text-xl">
+                {gender === 'NB' ? (
+                    <span>{animalEmoji}</span>
+                ) : (
+                    <img
+                        src={avatarUrl}
+                        alt="avatar"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                        }}
+                    />
+                )}
             </div>
             {genderSymbol && (
                 <span

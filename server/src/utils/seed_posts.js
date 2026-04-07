@@ -1,4 +1,4 @@
-const SEED_POSTS = [
+const RAW_SEED_POSTS = [
     // --- CAREER / WORK (20) ---
     { content: "Gaji UMR tapi gaya hidup SCBD, akhirnya terlilit pinjol... tolongin gue.", topic: "Karir", gender: "M", occupation: "Karyawan Swasta" },
     { content: "Capek banget jadi sandwich generation. Gaji lewat doang buat bayar utang orang tua.", topic: "Keluarga", gender: "F", occupation: "Karyawan" },
@@ -109,5 +109,18 @@ const SEED_POSTS = [
     { content: "Gue ngerjain tugas H-1 jam deadline. The power of kepepet.", topic: "Pendidikan", gender: "M", occupation: "Mahasiswa" },
     { content: "Lulus kumlaude tapi nganggur setahun. Hidup itu keras.", topic: "Karir", gender: "F", occupation: "Jobseeker" }
 ];
+
+const SEED_POSTS = RAW_SEED_POSTS.map((seed, idx) => {
+    // Generate a fixed anchor date so that it looks realistic but remains completely static across page refreshes
+    const anchorDate = new Date('2025-12-01T08:00:00Z');
+    anchorDate.setHours(anchorDate.getHours() - (idx * 17)); // Spread them out
+
+    return {
+        ...seed,
+        post_id: `seed_post_${idx}`,
+        created_at: anchorDate,
+        likes: (seed.content.length * 7) % 50 // deterministic likes
+    };
+});
 
 module.exports = { SEED_POSTS };

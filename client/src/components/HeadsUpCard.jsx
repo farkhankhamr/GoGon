@@ -48,7 +48,7 @@ export default function HeadsUpCard({ intel }) {
                 </div>
 
                 {/* Dashed border card for content */}
-                <div className="card-dashed px-3 py-2.5 mb-1.5 border-amber-400">
+                <div className="card-dashed px-4 py-3 mb-1.5 border-amber-400">
                     <p className="text-sm font-bold leading-relaxed" style={{ color: '#2A241D', fontFamily: 'Courier Prime, monospace' }}>
                         {intel.content}
                     </p>

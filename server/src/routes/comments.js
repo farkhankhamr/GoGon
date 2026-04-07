@@ -1,4 +1,5 @@
 const Comment = require('../models/Comment');
+const Post = require('../models/Post');
 
 async function commentsRoutes(fastify, options) {
     // GET /posts/:id/comments - Get comments for a post
@@ -25,6 +26,13 @@ async function commentsRoutes(fastify, options) {
         });
 
         await comment.save();
+
+        // Increment comments_count on Post
+        await Post.updateOne(
+            { post_id: id },
+            { $inc: { comments_count: 1, 'metrics.comments_count': 1 } }
+        );
+
         return comment;
     });
 }

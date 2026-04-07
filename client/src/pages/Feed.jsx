@@ -263,7 +263,7 @@ export default function Feed() {
                 className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-20"
                 style={{ backgroundColor: '#F5EFE8', borderTop: '1px solid #E0D5CA' }}
             >
-                <div className="p-3">
+                <div className="px-4 py-3">
                     {/* Composer card with Avatar */}
                     <div className="flex gap-3">
                         <Avatar anonId={anonId} gender={gender} />

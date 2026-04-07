@@ -72,22 +72,17 @@ const postsRoutes = async (fastify, options) => {
     // [NEW] Inject 10 Random Seed Posts (Empty State / Filler)
     // Only inject if standard sort (not popular) or if feed is empty
     if (sort !== 'popular') {
-      const randomSeeds = shuffle([...SEED_POSTS]).slice(0, 10).map((seed, idx) => {
-        // Create a fake date 2-7 days ago to ensure they are at bottom
-        const daysAgo = 2 + Math.floor(Math.random() * 5);
-        const fakeDate = new Date();
-        fakeDate.setDate(fakeDate.getDate() - daysAgo);
-
+      const randomSeeds = shuffle([...SEED_POSTS]).slice(0, 10).map((seed) => {
         return {
-          _id: 'seed_' + Math.random().toString(36).substr(2, 9),
-          post_id: 'seed_' + Math.random().toString(36).substr(2, 9),
+          _id: seed.post_id,
+          post_id: seed.post_id,
           content: seed.content,
           topic: seed.topic,
           city: city || 'Jakarta', // Fallback to current city context
           gender: seed.gender,
           occupation: seed.occupation,
-          likes: Math.floor(Math.random() * 50),
-          created_at: fakeDate,
+          likes: seed.likes,
+          created_at: seed.created_at,
           is_seed: true,
           distance: null,
           has_liked: false

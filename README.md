@@ -13,7 +13,7 @@ Anonymous hyperlocal community platform.
 
 ## Stack
 - **Backend:** Node.js + Fastify + MongoDB
-- **Frontend:** React + Vite (served separately)
+- **Frontend:** React + Vite (integrated & served by the backend)
 
 ## Deployment
 This server is auto-deployed to Hugging Face Spaces via GitHub Actions on every push to `main`.

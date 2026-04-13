@@ -128,7 +128,7 @@ const postsRoutes = async (fastify, options) => {
     const postData = {
       anon_id,
       content,
-      city,
+      city: city || 'Unknown',
       institution,
       topic,
       gender,

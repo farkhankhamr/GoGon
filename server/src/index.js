@@ -14,17 +14,32 @@ fastify.register(require('fastify-socket.io'), {
     }
 });
 
+// Serve static files (Frontend)
+fastify.register(require('@fastify/static'), {
+    root: path.join(__dirname, '../public'),
+    prefix: '/', // serve at root
+});
+
 // Database
 connectDB();
 
 
 // Routes
-fastify.register(require('./routes/posts'));
-fastify.register(require('./routes/comments'));
-fastify.register(require('./routes/intel'));
-fastify.register(require('./routes/reports'));
-fastify.register(require('./routes/admin'));
-fastify.register(require('./routes/config'));
+fastify.register(require('./routes/posts'), { prefix: '/api' });
+fastify.register(require('./routes/comments'), { prefix: '/api' });
+fastify.register(require('./routes/intel'), { prefix: '/api' });
+fastify.register(require('./routes/reports'), { prefix: '/api' });
+fastify.register(require('./routes/admin'), { prefix: '/api' });
+fastify.register(require('./routes/config'), { prefix: '/api' });
+
+// SPA Fallback: Any route not handled by API or static files should serve index.html
+fastify.setNotFoundHandler((request, reply) => {
+    if (request.raw.url.startsWith('/api')) {
+        reply.code(404).send({ error: 'API route not found' });
+    } else {
+        reply.sendFile('index.html');
+    }
+});
 
 // Socket.IO Logic
 fastify.ready(err => {

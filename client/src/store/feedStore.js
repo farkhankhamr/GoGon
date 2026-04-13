@@ -139,14 +139,23 @@ const useFeedStore = create((set, get) => ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(postData)
             });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to create post');
+            }
+
             const realPost = await res.json();
             set(state => ({
                 posts: state.posts.map(p => p.post_id === tempId ? realPost : p)
             }));
         } catch (err) {
+            console.error('Add post failed:', err);
             set(state => ({
                 posts: state.posts.filter(p => p.post_id !== tempId)
             }));
+            // Optionally alert user
+            throw err;
         }
     },
 

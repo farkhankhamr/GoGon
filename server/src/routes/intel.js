@@ -99,7 +99,7 @@ const intelRoutes = async (fastify, options) => {
         const newIntel = new IntelPost({
             type,
             content,
-            city,
+            city: city || 'Unknown',
             area,
             anon_id,
             expires_at,

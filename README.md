@@ -17,3 +17,4 @@ Anonymous hyperlocal community platform.
 
 ## Deployment
 This server is auto-deployed to Hugging Face Spaces via GitHub Actions on every push to `main`.
+# Triggering fresh deploy

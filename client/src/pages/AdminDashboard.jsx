@@ -197,7 +197,7 @@ export default function AdminDashboard() {
     const verifyToken = async (t) => {
         try {
             setLoading(true);
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/admin/summaries?limit=30`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/summaries?limit=30`, {
                 headers: { 'x-admin-token': t }
             });
             if (res.ok) {
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
 
     const fetchAdminSettings = async (t) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/admin/settings`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/settings`, {
                 headers: { 'x-admin-token': t || token }
             });
             if (res.ok) {
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
         try {
             setSavingSetting(true);
             const newValue = !currentValue;
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/admin/settings`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/settings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -690,7 +690,7 @@ export default function AdminDashboard() {
                                                 <button
                                                     onClick={async () => {
                                                         try {
-                                                            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/admin/retry-export/${s.dateKey}`, {
+                                                            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/retry-export/${s.dateKey}`, {
                                                                 method: 'POST',
                                                                 headers: { 'x-admin-token': token }
                                                             });

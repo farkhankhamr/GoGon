@@ -310,6 +310,7 @@ export default function AdminDashboard() {
 
     // Pulse Metrics - use live stats if available, fall back to latest summary
     const postsCreated = liveStats?.total_posts ?? latest?.totals?.total_posts ?? 0;
+    const posts7d = liveStats?.total_posts_7d ?? 0;
     const postsWithReplies = liveStats?.posts_with_replies ?? latest?.totals?.posts_with_replies ?? 0;
     const pctWithReplies = postsCreated > 0 ? Math.round((postsWithReplies / postsCreated) * 100) : 0;
     const silentPosts = liveStats?.posts_with_zero_interaction ?? latest?.totals?.posts_with_zero_interaction ?? 0;
@@ -413,7 +414,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Community Pulse</h3>
-                            <p className="text-sm text-slate-400">Real-time health indicators (24h)</p>
+                            <p className="text-sm text-slate-400">All-time community health indicators</p>
                         </div>
                         <button
                             onClick={handleRunSummary}
@@ -427,9 +428,9 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <Card className="p-6">
                             <MetricValue
-                                label="Posts Created"
+                                label="Total Posts"
                                 value={postsCreated}
-                                subtext="New content generated today"
+                                subtext={`+${posts7d} in last 7 days`}
                                 icon={MessageSquare}
                                 color="indigo"
                             />

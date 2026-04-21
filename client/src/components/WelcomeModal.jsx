@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import TnCSheet from './TnCSheet';
 
 export default function WelcomeModal({ onConfirm }) {
+    const [showTnC, setShowTnC] = useState(false);
     return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 text-center"
             style={{ backgroundColor: '#F5EFE8' }}>
@@ -32,10 +34,19 @@ export default function WelcomeModal({ onConfirm }) {
                 <p className="mt-8 text-[10px] max-w-[240px] leading-tight"
                     style={{ color: '#8C8476', fontFamily: 'DM Sans, sans-serif' }}>
                     Dengan tap tombol diatas, kamu menerima{' '}
-                    <span className="underline cursor-pointer">syarat &amp; ketentuan</span>{' '}
+                    <button
+                        type="button"
+                        onClick={() => setShowTnC(true)}
+                        className="underline font-bold"
+                        style={{ color: '#5A4E3D' }}
+                    >
+                        syarat &amp; ketentuan
+                    </button>{' '}
                     berlaku
                 </p>
             </div>
+
+            <TnCSheet isOpen={showTnC} onClose={() => setShowTnC(false)} />
         </div>
     );
 }

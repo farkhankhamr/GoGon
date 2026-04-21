@@ -174,7 +174,7 @@ const adminRoutes = async (fastify, options) => {
         }
     });
 
-    // GET /admin/live-stats - Real-time 24h stats from DB
+    // GET /admin/live-stats - All-time + recent stats from DB
     fastify.get('/admin/live-stats', {
         preHandler: checkAdminToken
     }, async (request, reply) => {
@@ -183,28 +183,40 @@ const adminRoutes = async (fastify, options) => {
             const Comment = require('../models/Comment');
             const Report = require('../models/Report');
 
-            const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-            const [totalPosts, totalComments, reactionsAgg, reportedPosts, autoHidden, postsWithReplies, silentPosts] = await Promise.all([
-                Post.countDocuments({ created_at: { $gte: since }, status: 'active' }),
-                Comment.countDocuments({ created_at: { $gte: since } }),
+            const [
+                totalPostsAllTime,
+                totalPosts7d,
+                totalComments7d,
+                reactionsAgg,
+                reportedPosts7d,
+                autoHidden,
+                postsWithReplies,
+                silentPosts
+            ] = await Promise.all([
+                Post.countDocuments({ status: 'active' }),
+                Post.countDocuments({ created_at: { $gte: since7d }, status: 'active' }),
+                Comment.countDocuments({ created_at: { $gte: since7d } }),
                 Post.aggregate([
-                    { $match: { created_at: { $gte: since } } },
+                    { $match: {} },
                     { $group: { _id: null, total: { $sum: '$likes' } } }
                 ]),
-                Report.countDocuments({ created_at: { $gte: since } }),
-                Post.countDocuments({ created_at: { $gte: since }, status: 'hidden' }),
-                Post.countDocuments({ created_at: { $gte: since }, comments_count: { $gt: 0 } }),
-                Post.countDocuments({ created_at: { $gte: since }, likes: 0, comments_count: 0 })
+                Report.countDocuments({ created_at: { $gte: since7d } }),
+                Post.countDocuments({ status: 'hidden' }),
+                Post.countDocuments({ comments_count: { $gt: 0 } }),
+                Post.countDocuments({ likes: 0, comments_count: 0, status: 'active' })
             ]);
 
             return {
                 success: true,
                 stats: {
-                    total_posts: totalPosts,
-                    total_comments: totalComments,
+                    total_posts: totalPostsAllTime,
+                    total_posts_7d: totalPosts7d,
+                    total_comments: totalComments7d,
                     total_reactions: reactionsAgg[0]?.total || 0,
-                    reported_posts_count: reportedPosts,
+                    reported_posts_count: reportedPosts7d,
                     auto_hidden_count: autoHidden,
                     posts_with_replies: postsWithReplies,
                     posts_with_zero_interaction: silentPosts

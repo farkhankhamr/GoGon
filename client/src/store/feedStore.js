@@ -19,10 +19,9 @@ const useFeedStore = create((set, get) => ({
     fetchIntel: async (filters = {}) => {
         try {
             const params = new URLSearchParams();
-            const { city, location } = useUserStore.getState();
-            const { anonId } = useUserStore.getState();
+            const { location, anonId } = useUserStore.getState();
 
-            if (city) params.append('city', city);
+            // No city filter — unified feed shows all cities
             if (filters.type) params.append('type', filters.type);
 
             if (location && location.lat) {
@@ -51,18 +50,12 @@ const useFeedStore = create((set, get) => ({
         }
         try {
             const params = new URLSearchParams();
-            const { city, institution, location } = useUserStore.getState();
-            const finalFilters = { city, institution, ...filters };
+            const { institution, location } = useUserStore.getState();
+            const finalFilters = { institution, ...filters };
 
-            if (finalFilters.city) params.append('city', finalFilters.city);
+            // No city filter — unified feed shows all cities
             if (finalFilters.institution) params.append('institution', finalFilters.institution);
             if (finalFilters.topic) params.append('topic', finalFilters.topic);
-
-            if (finalFilters.radius && location && location.lat) {
-                params.append('lat', location.lat);
-                params.append('long', location.long);
-                params.append('radius', finalFilters.radius);
-            }
 
             // Tab: My Posts
             if (finalFilters.myPosts) {

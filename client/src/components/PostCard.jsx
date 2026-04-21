@@ -13,7 +13,7 @@ import Avatar from './Avatar';
 
 export default function PostCard({ post }) {
     const { likePost, editPost, deletePost, reportPost } = useFeedStore();
-    const { anonId, city: userCity } = useUserStore();
+    const { anonId, city: userCity, location: userLocation } = useUserStore();
     const { chat_enabled } = useConfigStore(state => state.settings);
     const navigate = useNavigate();
 
@@ -28,7 +28,22 @@ export default function PostCard({ post }) {
     const isSameCity = userCity && post.city && userCity.toLowerCase() === post.city.toLowerCase();
 
     let locationDisplay = post.city || '—';
-    if (isSameCity && post.distance != null) {
+
+    // Compute distance client-side if both user and post have coordinates
+    const postCoords = post.location?.coordinates; // [long, lat]
+    if (userLocation?.lat && postCoords?.length === 2) {
+        const toRad = d => d * Math.PI / 180;
+        const R = 6371000; // metres
+        const φ1 = toRad(userLocation.lat), φ2 = toRad(postCoords[1]);
+        const Δφ = toRad(postCoords[1] - userLocation.lat);
+        const Δλ = toRad(postCoords[0] - userLocation.long);
+        const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+        const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        if (dist < 100) locationDisplay = '<100m';
+        else if (dist < 1000) locationDisplay = `${Math.round(dist / 100) * 100}m`;
+        else locationDisplay = `~${Math.round(dist / 1000)}km`;
+    } else if (isSameCity && post.distance != null) {
+        // Fallback to server-computed distance from geoNear
         if (post.distance < 100) locationDisplay = '<100m';
         else if (post.distance <= 1000) locationDisplay = '100m - 1km';
         else locationDisplay = '>1km';

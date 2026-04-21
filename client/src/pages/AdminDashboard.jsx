@@ -343,7 +343,7 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+        <div className="min-h-screen bg-slate-50 text-slate-900" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             {/* Top Navigation */}
             <div className="bg-white border-b border-slate-200 px-6 py-4">
                 <div className="max-w-[1280px] mx-auto flex justify-between items-center">

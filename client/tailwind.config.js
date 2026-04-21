@@ -22,7 +22,7 @@ export default {
             },
             fontFamily: {
                 mono: ['Courier Prime', 'Courier New', 'Courier', 'monospace'],
-                sans: ['Courier Prime', 'Courier New', 'Courier', 'monospace'],
+                sans: ['"DM Sans"', 'sans-serif'],
             },
             colors: {
                 gogon: {

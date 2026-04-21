@@ -180,6 +180,7 @@ const DayDetailModal = ({ isOpen, onClose, data }) => {
 // --- Main Page ---
 
 const HARDCODED_TOKEN = '@Polki890';
+const ADMIN_API_URL = 'https://farkhankhamr-gogon-server.hf.space/api';
 
 export default function AdminDashboard() {
     const [token, setToken] = useState(localStorage.getItem('adminToken') || HARDCODED_TOKEN);
@@ -204,7 +205,7 @@ export default function AdminDashboard() {
     const verifyToken = async (t) => {
         try {
             setLoading(true);
-            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/summaries?limit=30`, {
+            const res = await fetch(`${ADMIN_API_URL}/admin/summaries?limit=30`, {
                 headers: { 'x-admin-token': t }
             });
             if (res.ok) {
@@ -227,7 +228,7 @@ export default function AdminDashboard() {
 
     const fetchAdminSettings = async (t) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/settings`, {
+            const res = await fetch(`${ADMIN_API_URL}/admin/settings`, {
                 headers: { 'x-admin-token': t || token }
             });
             if (res.ok) {
@@ -245,9 +246,7 @@ export default function AdminDashboard() {
 
     const fetchLiveStats = async () => {
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || '/api';
-            console.log('[AdminDashboard] fetchLiveStats from:', `${apiUrl}/admin/live-stats`);
-            const res = await fetch(`${apiUrl}/admin/live-stats`, {
+            const res = await fetch(`${ADMIN_API_URL}/admin/live-stats`, {
                 headers: { 'x-admin-token': token }
             });
             console.log('[AdminDashboard] live-stats response status:', res.status);
@@ -267,7 +266,7 @@ export default function AdminDashboard() {
     const handleRunSummary = async () => {
         try {
             setRunningSummary(true);
-            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/run-daily-summary`, {
+            const res = await fetch(`${ADMIN_API_URL}/admin/run-daily-summary`, {
                 method: 'POST',
                 headers: { 'x-admin-token': token, 'Content-Type': 'application/json' }
             });
@@ -293,7 +292,7 @@ export default function AdminDashboard() {
         try {
             setSavingSetting(true);
             const newValue = !currentValue;
-            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/settings`, {
+            const res = await fetch(`${ADMIN_API_URL}/admin/settings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -724,7 +723,7 @@ export default function AdminDashboard() {
                                                 <button
                                                     onClick={async () => {
                                                         try {
-                                                            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/retry-export/${s.dateKey}`, {
+                                                            const res = await fetch(`${ADMIN_API_URL}/admin/retry-export/${s.dateKey}`, {
                                                                 method: 'POST',
                                                                 headers: { 'x-admin-token': token }
                                                             });

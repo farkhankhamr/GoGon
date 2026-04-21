@@ -29,6 +29,14 @@ const Avatar = ({ anonId, gender }) => {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                             e.target.style.display = 'none';
+                            const parent = e.target.parentNode;
+                            if (parent && !parent.querySelector('.avatar-fallback')) {
+                                const span = document.createElement('span');
+                                span.className = 'avatar-fallback';
+                                span.style.fontSize = '1.25rem';
+                                span.textContent = animalEmoji;
+                                parent.appendChild(span);
+                            }
                         }}
                     />
                 )}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, MessageSquare } from 'lucide-react';
 import useFeedStore from '../store/feedStore';
 import useUserStore from '../store/userStore';
+import Avatar from '../components/Avatar';
 
 const GOGON_COLORS = {
     bg: '#F5EFE8',
@@ -89,10 +90,7 @@ export default function CommentsDetail() {
                     ) : (
                         comments.map((comment, idx) => (
                             <div key={idx} className="flex gap-3">
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                                    style={{ backgroundColor: '#EDE5DC', border: '1px solid #C4B8AC', color: '#5A4E3D', fontSize: '10px', fontWeight: 'bold', fontFamily: 'DM Sans, sans-serif' }}>
-                                    {(comment.anon_id || '??').substring(0, 2).toUpperCase()}
-                                </div>
+                                <Avatar anonId={comment.anon_id} gender={comment.gender || null} />
                                 <div className="p-3 rounded-2xl flex-1"
                                     style={{ backgroundColor: '#FFFFFF', border: '1px solid #E0D5CA' }}>
                                     <p style={{ fontSize: '14px', color: '#1E1E1E', fontFamily: 'DM Sans, sans-serif' }}>{comment.content}</p>

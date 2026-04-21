@@ -100,12 +100,17 @@ const postsRoutes = async (fastify, options) => {
     return postsWithStatus;
   });
 
-  // GET /posts/me - My Posts
+  // GET /posts/me - My Posts (supports comma-separated anon_id for multi-session)
   fastify.get('/posts/me', async (request, reply) => {
     const { anon_id } = request.query;
     if (!anon_id) return reply.code(400).send({ error: 'Missing anon_id' });
 
-    const posts = await Post.find({ anon_id, status: 'active' }).sort({ created_at: -1 });
+    const ids = anon_id.split(',').map(id => id.trim()).filter(Boolean);
+    const query = ids.length === 1
+        ? { anon_id: ids[0], status: 'active' }
+        : { anon_id: { $in: ids }, status: 'active' };
+
+    const posts = await Post.find(query).sort({ created_at: -1 });
     return posts;
   });
 

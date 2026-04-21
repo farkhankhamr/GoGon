@@ -23,9 +23,10 @@ export default function DealCard({ intel }) {
         window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(intel.content + ' ' + intel.city)}`, '_blank');
     };
 
-    const validUntil = intel.deal_meta.validity_preset === 'TODAY' ? 'Hari ini'
-        : intel.deal_meta.validity_preset === 'TOMORROW' ? 'Besok'
-            : intel.deal_meta.validity_preset === 'WEEKEND' ? 'Weekend'
+    const preset = intel.deal_meta?.validity_preset;
+    const validUntil = preset === 'TODAY' ? 'Hari ini'
+        : preset === 'TOMORROW' ? 'Besok'
+            : preset === 'WEEKEND' ? 'Weekend'
                 : '48 Jam';
 
     return (

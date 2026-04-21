@@ -12,7 +12,7 @@ async function commentsRoutes(fastify, options) {
     // POST /posts/:id/comments - Create Comment
     fastify.post('/posts/:id/comments', async (request, reply) => {
         const { id } = request.params;
-        const { content, anon_id } = request.body;
+        const { content, anon_id, gender } = request.body;
 
         if (!content || !anon_id) {
             return reply.code(400).send({ error: 'Missing content or anon_id' });
@@ -21,6 +21,7 @@ async function commentsRoutes(fastify, options) {
         const comment = new Comment({
             post_id: id,
             anon_id,
+            gender: gender || null,
             content,
             expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000) // Sync with post expiry ideally, ensuring not longer than post
         });

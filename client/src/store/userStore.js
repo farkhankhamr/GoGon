@@ -20,8 +20,9 @@ function getOrCreateAnonId() {
 
 const useUserStore = create(
     persist(
-        (set) => ({
+        (set, get) => ({
             anonId: getOrCreateAnonId(),
+            previousAnonIds: [], // all past session IDs for "Aku" tab history
             city: null,
             institution: null,
             occupation: null,
@@ -32,15 +33,25 @@ const useUserStore = create(
             toggleDistanceDisplay: () => set(state => ({ distanceDisplay: !state.distanceDisplay })),
 
             initUser: (data) => {
-                set((state) => ({
-                    anonId: state.anonId || uuidv4(),
-                    ...data
-                }));
+                const oldId = get().anonId;
+                const newId = uuidv4();
+                set((state) => {
+                    const prevIds = Array.from(new Set([...(state.previousAnonIds || []), oldId].filter(Boolean)));
+                    return {
+                        anonId: newId,
+                        previousAnonIds: prevIds,
+                        ...data
+                    };
+                });
             },
 
             setLocation: (lat, long) => set({ location: { lat, long } }),
 
-            // Rotate rule implementation hints could go here, for now just basic ID
+            getAllAnonIds: () => {
+                const state = get();
+                return Array.from(new Set([state.anonId, ...(state.previousAnonIds || [])].filter(Boolean)));
+            },
+
             regenerateId: () => set({ anonId: uuidv4() }),
         }),
         {

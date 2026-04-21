@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import useUserStore from '../store/userStore';
+import TnCSheet from '../components/TnCSheet';
 
 const CITIES = ['Jakarta', 'Bandung', 'Surabaya', 'Jogja', 'Bali', 'Lainnya'];
 
@@ -55,6 +56,7 @@ export default function Onboarding() {
     const [selectedOccupation, setSelectedOccupation] = useState('');
     const [selectedGender, setSelectedGender] = useState('');
     const [locationStatus, setLocationStatus] = useState('idle');
+    const [showTnC, setShowTnC] = useState(false);
 
     const { initUser, setLocation } = useUserStore();
     const navigate = useNavigate();
@@ -216,8 +218,22 @@ export default function Onboarding() {
                     >
                         Mulai GoGon
                     </button>
+
+                    <p className="text-center text-xs" style={{ color: '#8C8476', fontFamily: 'DM Sans, sans-serif' }}>
+                        Dengan melanjutkan, kamu setuju dengan{' '}
+                        <button
+                            type="button"
+                            onClick={() => setShowTnC(true)}
+                            className="underline font-bold"
+                            style={{ color: '#5A4E3D' }}
+                        >
+                            Syarat & Ketentuan
+                        </button>
+                    </p>
                 </div>
             </div>
+
+            <TnCSheet isOpen={showTnC} onClose={() => setShowTnC(false)} />
         </div>
     );
 }

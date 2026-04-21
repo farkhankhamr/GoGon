@@ -66,7 +66,8 @@ const useFeedStore = create((set, get) => ({
 
             // Tab: My Posts
             if (finalFilters.myPosts) {
-                params.append('anon_id', useUserStore.getState().anonId);
+                const allIds = useUserStore.getState().getAllAnonIds();
+                params.append('anon_id', allIds.join(','));
                 const res = await fetch(`${API_URL}/posts/me?${params.toString()}`);
                 if (!res.ok) throw new Error('Failed');
                 const data = await res.json();
@@ -162,10 +163,14 @@ const useFeedStore = create((set, get) => ({
     addIntel: async (intelData) => {
         // Optimistic Update can be tricky with complex rules, let's just push and revert if fail
         const tempId = Date.now().toString();
+        const optimExpiry = intelData.type === 'HEADSUP'
+            ? new Date(Date.now() + 8 * 60 * 60 * 1000)
+            : new Date(Date.now() + 24 * 60 * 60 * 1000);
         const optimIntel = {
             ...intelData,
             intel_id: tempId,
             created_at: new Date(),
+            expires_at: optimExpiry,
             metrics: { saves: 0, ack: 0, direction_clicks: 0, updates: 0 },
             distance_bucket: 'NEARBY'
         };
@@ -350,10 +355,11 @@ const useFeedStore = create((set, get) => ({
 
     addComment: async (postId, content, anonId) => {
         try {
+            const { gender } = useUserStore.getState();
             const res = await fetch(`${API_URL}/posts/${postId}/comments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, anon_id: anonId })
+                body: JSON.stringify({ content, anon_id: anonId, gender: gender || null })
             });
             if (!res.ok) throw new Error('Failed to post comment');
             const newComment = await res.json();

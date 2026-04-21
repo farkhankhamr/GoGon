@@ -183,8 +183,11 @@ const adminRoutes = async (fastify, options) => {
             const Comment = require('../models/Comment');
             const Report = require('../models/Report');
 
-            const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
             const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            const since14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
+            // Indonesian stopwords to filter from topic analysis
+            const STOPWORDS = new Set(['yang', 'dan', 'di', 'ke', 'dari', 'ini', 'itu', 'ada', 'ada', 'bisa', 'untuk', 'dengan', 'tidak', 'juga', 'lebih', 'tapi', 'atau', 'aku', 'kamu', 'dia', 'kita', 'mereka', 'kami', 'saya', 'sudah', 'sudah', 'jadi', 'kalau', 'sih', 'dong', 'deh', 'kan', 'nih', 'lagi', 'udah', 'mau', 'sama', 'nya', 'pun', 'aja', 'gue', 'lo', 'gak', 'nggak', 'banget', 'lah', 'yah', 'ya', 'mah', 'pada', 'akan', 'buat', 'atas', 'bawah', 'kalo', 'gimana', 'karena', 'ketika', 'dimana', 'kenapa', 'harus', 'boleh', 'punya', 'dari', 'dalam', 'oleh', 'saat', 'bila', 'jika', 'bahwa', 'masih', 'baru', 'paling', 'sangat', 'begitu', 'seperti', 'warga', 'orang', 'tempat', 'sana', 'sini', 'situ', 'nah', 'yg', 'dgn', 'utk', 'krn', 'sdh', 'blm', 'belum', 'juga', 'lalu', 'terus', 'habis', 'saja', 'mana', 'dong', 'deh']);
 
             const [
                 totalPostsAllTime,
@@ -194,20 +197,72 @@ const adminRoutes = async (fastify, options) => {
                 reportedPosts7d,
                 autoHidden,
                 postsWithReplies,
-                silentPosts
+                silentPosts,
+                cityAgg,
+                dailyAgg,
+                wordAgg
             ] = await Promise.all([
                 Post.countDocuments({ status: 'active' }),
                 Post.countDocuments({ created_at: { $gte: since7d }, status: 'active' }),
                 Comment.countDocuments({ created_at: { $gte: since7d } }),
-                Post.aggregate([
-                    { $match: {} },
-                    { $group: { _id: null, total: { $sum: '$likes' } } }
-                ]),
+                Post.aggregate([{ $match: { status: 'active' } }, { $group: { _id: null, total: { $sum: '$likes' } } }]),
                 Report.countDocuments({ created_at: { $gte: since7d } }),
                 Post.countDocuments({ status: 'hidden' }),
                 Post.countDocuments({ comments_count: { $gt: 0 } }),
-                Post.countDocuments({ likes: 0, comments_count: 0, status: 'active' })
+                Post.countDocuments({ likes: 0, comments_count: 0, status: 'active' }),
+                // City distribution
+                Post.aggregate([
+                    { $match: { status: 'active', city: { $nin: [null, '', 'Lainnya'] } } },
+                    { $group: { _id: '$city', count: { $sum: 1 } } },
+                    { $sort: { count: -1 } },
+                    { $limit: 8 }
+                ]),
+                // Daily post + engagement counts (last 14 days)
+                Post.aggregate([
+                    { $match: { status: 'active', created_at: { $gte: since14d } } },
+                    { $group: {
+                        _id: { $dateToString: { format: '%Y-%m-%d', date: '$created_at', timezone: '+07:00' } },
+                        posts: { $sum: 1 },
+                        engagement: { $sum: { $add: ['$likes', '$comments_count'] } }
+                    }},
+                    { $sort: { _id: 1 } }
+                ]),
+                // Word frequency from post content
+                Post.aggregate([
+                    { $match: { status: 'active', created_at: { $gte: since7d } } },
+                    { $project: { words: { $split: [{ $toLower: '$content' }, ' '] } } },
+                    { $unwind: '$words' },
+                    { $project: { word: { $replaceAll: { input: '$words', find: /[^a-zA-Z\u00C0-\u024F]/, replacement: '' } } } },
+                    { $match: { word: { $regex: '^[a-zA-Z\u00C0-\u024F]{4,}$' } } },
+                    { $group: { _id: '$word', count: { $sum: 1 } } },
+                    { $sort: { count: -1 } },
+                    { $limit: 50 }
+                ])
             ]);
+
+            const totalActive = totalPostsAllTime || 1;
+            const city_dist = cityAgg.map(c => ({
+                city: c._id,
+                count: c.count,
+                percentage: Math.round((c.count / totalActive) * 100)
+            }));
+
+            const daily_chart = dailyAgg.map(d => ({
+                day: d._id,
+                posts: d.posts,
+                engagement: d.engagement,
+                reported: 0
+            }));
+
+            // Filter stopwords and build topics
+            const topics = wordAgg
+                .filter(w => !STOPWORDS.has(w._id) && w._id.length >= 4)
+                .slice(0, 10)
+                .map((w, idx, arr) => ({
+                    name: w._id,
+                    count: w.count,
+                    percentage: arr[0] ? Math.round((w.count / arr[0].count) * 100) : 0
+                }));
 
             return {
                 success: true,
@@ -219,7 +274,10 @@ const adminRoutes = async (fastify, options) => {
                     reported_posts_count: reportedPosts7d,
                     auto_hidden_count: autoHidden,
                     posts_with_replies: postsWithReplies,
-                    posts_with_zero_interaction: silentPosts
+                    posts_with_zero_interaction: silentPosts,
+                    city_dist,
+                    daily_chart,
+                    topics
                 }
             };
         } catch (error) {

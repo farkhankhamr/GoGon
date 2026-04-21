@@ -335,14 +335,26 @@ export default function AdminDashboard() {
     const reportedPosts = liveStats?.reported_posts_count ?? latest?.safety?.reported_posts_count ?? 0;
     const autoHidden = liveStats?.auto_hidden_count ?? latest?.safety?.auto_hidden_count ?? 0;
 
-    // Chart Data Preparation
-    const chartData = summaries.map(s => ({
-        day: `Day ${s.day_index}`,
-        posts: s.totals.total_posts,
-        engagement: s.totals.total_reactions + s.totals.total_comments,
-        reported: s.safety?.reported_posts_count || 0,
-        original: s // Carry full object for click handler
-    }));
+    // Chart Data — use summaries if available, else live daily_chart
+    const chartData = summaries.length > 0
+        ? summaries.map(s => ({
+            day: `Day ${s.day_index}`,
+            posts: s.totals.total_posts,
+            engagement: s.totals.total_reactions + s.totals.total_comments,
+            reported: s.safety?.reported_posts_count || 0,
+            original: s
+        }))
+        : (liveStats?.daily_chart || []).map(d => ({
+            day: d.day,
+            posts: d.posts,
+            engagement: d.engagement,
+            reported: d.reported || 0,
+            original: null
+        }));
+
+    // City + Topics — prefer live data (always fresh), fall back to latest summary
+    const cityDist = (liveStats?.city_dist?.length > 0 ? liveStats.city_dist : latest?.location_dist) || [];
+    const topicList = (liveStats?.topics?.length > 0 ? liveStats.topics : latest?.topics) || [];
 
     if (loading && !isAuthenticated) {
         return (
@@ -514,7 +526,8 @@ export default function AdminDashboard() {
                                         margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                                         onClick={(e) => {
                                             if (e && e.activePayload && e.activePayload[0]) {
-                                                setSelectedDay(e.activePayload[0].payload.original);
+                                                const orig = e.activePayload[0].payload.original;
+                                                if (orig) setSelectedDay(orig);
                                             }
                                         }}
                                         className="cursor-pointer"
@@ -595,17 +608,17 @@ export default function AdminDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
-                                    {latest?.location_dist?.slice(0, 5).map((loc, idx) => (
+                                    {cityDist.length > 0 ? cityDist.slice(0, 5).map((loc, idx) => (
                                         <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="px-6 py-4 text-sm font-medium text-slate-900">{loc.city}</td>
                                             <td className="px-6 py-4 text-sm text-slate-500 text-right">{loc.count}</td>
                                             <td className="px-6 py-4 text-sm text-slate-500 text-right">{loc.percentage}%</td>
                                         </tr>
-                                    )) || (
-                                            <tr>
-                                                <td colSpan="3" className="px-6 py-8 text-center text-sm text-slate-400">No location data available yet.</td>
-                                            </tr>
-                                        )}
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="3" className="px-6 py-8 text-center text-sm text-slate-400">No location data available yet.</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </Card>
@@ -615,11 +628,11 @@ export default function AdminDashboard() {
                         <SectionHeader title="Trending Topics" subtitle="What the community is discussing" />
                         <Card className="p-6">
                             <div className="space-y-4">
-                                {latest?.topics?.slice(0, 5).map((topic, idx) => (
+                                {topicList.length > 0 ? topicList.slice(0, 8).map((topic, idx) => (
                                     <div key={idx}>
                                         <div className="flex justify-between text-sm mb-1">
-                                            <span className="font-medium text-slate-700">{topic.name}</span>
-                                            <span className="text-slate-500">{topic.percentage}%</span>
+                                            <span className="font-medium text-slate-700 capitalize">{topic.name}</span>
+                                            <span className="text-slate-500">{topic.count} posts</span>
                                         </div>
                                         <div className="w-full bg-slate-100 rounded-full h-2">
                                             <div
@@ -628,9 +641,9 @@ export default function AdminDashboard() {
                                             />
                                         </div>
                                     </div>
-                                )) || (
-                                        <p className="text-center text-sm text-slate-400 py-4">No topic data available yet.</p>
-                                    )}
+                                )) : (
+                                    <p className="text-center text-sm text-slate-400 py-4">No topic data available yet.</p>
+                                )}
                             </div>
                         </Card>
                     </div>

@@ -183,7 +183,7 @@ const HARDCODED_TOKEN = '@Polki890';
 
 export default function AdminDashboard() {
     const [token, setToken] = useState(localStorage.getItem('adminToken') || HARDCODED_TOKEN);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(true);
     const [summaries, setSummaries] = useState([]);
     const [liveStats, setLiveStats] = useState(null);
     const [selectedDay, setSelectedDay] = useState(null);
@@ -193,9 +193,12 @@ export default function AdminDashboard() {
     const [savingSetting, setSavingSetting] = useState(false);
     const [runningSummary, setRunningSummary] = useState(false);
 
-    // Initial Check
+    // Initial Check — auto-auth + fetch everything on mount
     useEffect(() => {
-        if (token) verifyToken(token);
+        console.log('[AdminDashboard] Mounting. Token:', token);
+        verifyToken(token);
+        fetchLiveStats();
+        fetchAdminSettings();
     }, []);
 
     const verifyToken = async (t) => {
@@ -242,15 +245,22 @@ export default function AdminDashboard() {
 
     const fetchLiveStats = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/live-stats`, {
+            const apiUrl = import.meta.env.VITE_API_URL || '/api';
+            console.log('[AdminDashboard] fetchLiveStats from:', `${apiUrl}/admin/live-stats`);
+            const res = await fetch(`${apiUrl}/admin/live-stats`, {
                 headers: { 'x-admin-token': token }
             });
+            console.log('[AdminDashboard] live-stats response status:', res.status);
             if (res.ok) {
                 const data = await res.json();
+                console.log('[AdminDashboard] live-stats data:', JSON.stringify(data));
                 setLiveStats(data.stats);
+            } else {
+                const text = await res.text();
+                console.error('[AdminDashboard] live-stats failed:', res.status, text);
             }
         } catch (err) {
-            console.error('Failed to fetch live stats:', err);
+            console.error('[AdminDashboard] Failed to fetch live stats:', err);
         }
     };
 
@@ -271,6 +281,7 @@ export default function AdminDashboard() {
         }
     };
 
+    // Also re-fetch when isAuthenticated changes (kept as backup)
     useEffect(() => {
         if (isAuthenticated) {
             fetchAdminSettings();

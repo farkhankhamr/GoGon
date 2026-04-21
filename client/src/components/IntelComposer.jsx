@@ -9,6 +9,7 @@ export default function IntelComposer({ onClose }) {
     const { anonId, city, location, gender } = useUserStore();
     const [step, setStep] = useState('select'); // select, deal, headsup, headsup-form
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
     // Deal State
     const [dealContent, setDealContent] = useState('');
@@ -29,6 +30,7 @@ export default function IntelComposer({ onClose }) {
     const handleSubmitDeal = async () => {
         if (!dealContent.trim()) return;
         setIsSubmitting(true);
+        setSubmitError('');
         try {
             await addIntel({
                 type: 'DEAL',
@@ -43,10 +45,10 @@ export default function IntelComposer({ onClose }) {
                     seen_directly: seenDirectly
                 }
             });
-            onClose(); // Use onClose for clean exit
+            onClose();
         } catch (err) {
             console.error(err);
-            alert(err.message || 'Gagal mengirim. Coba lagi.');
+            setSubmitError(err.message || 'Gagal mengirim. Coba lagi.');
         } finally {
             setIsSubmitting(false);
         }
@@ -68,6 +70,7 @@ export default function IntelComposer({ onClose }) {
     const handleSubmitHeadsUp = async () => {
         if (!headsUpType) return;
         setIsSubmitting(true);
+        setSubmitError('');
         try {
             await addIntel({
                 type: 'HEADSUP',
@@ -80,10 +83,10 @@ export default function IntelComposer({ onClose }) {
                     heads_up_type: headsUpType
                 }
             });
-            onClose(); // Use onClose for clean exit
+            onClose();
         } catch (err) {
             console.error(err);
-            alert(err.message || 'Gagal mengirim. Coba lagi.');
+            setSubmitError(err.message || 'Gagal mengirim. Coba lagi.');
         } finally {
             setIsSubmitting(false);
         }
@@ -215,6 +218,11 @@ export default function IntelComposer({ onClose }) {
                             <label htmlFor="seen" className="text-xs font-bold text-[#5A4E3D]">Aku lihat langsung</label>
                         </div>
 
+                        {submitError && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-lg px-3 py-2">
+                                {submitError}
+                            </div>
+                        )}
                         <button
                             onClick={handleSubmitDeal}
                             disabled={!dealContent.trim() || isSubmitting}
@@ -270,6 +278,11 @@ export default function IntelComposer({ onClose }) {
                             <Clock size={14} />
                             <span>Info ini hilang otomatis dalam 8 jam.</span>
                         </div>
+                        {submitError && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-lg px-3 py-2">
+                                {submitError}
+                            </div>
+                        )}
                         <button
                             onClick={handleSubmitHeadsUp}
                             disabled={!headsUpContent.trim() || isSubmitting}

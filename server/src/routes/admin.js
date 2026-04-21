@@ -174,6 +174,48 @@ const adminRoutes = async (fastify, options) => {
         }
     });
 
+    // GET /admin/live-stats - Real-time 24h stats from DB
+    fastify.get('/admin/live-stats', {
+        preHandler: checkAdminToken
+    }, async (request, reply) => {
+        try {
+            const Post = require('../models/Post');
+            const Comment = require('../models/Comment');
+            const Report = require('../models/Report');
+
+            const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+            const [totalPosts, totalComments, reactionsAgg, reportedPosts, autoHidden, postsWithReplies, silentPosts] = await Promise.all([
+                Post.countDocuments({ created_at: { $gte: since }, status: 'active' }),
+                Comment.countDocuments({ created_at: { $gte: since } }),
+                Post.aggregate([
+                    { $match: { created_at: { $gte: since } } },
+                    { $group: { _id: null, total: { $sum: '$likes' } } }
+                ]),
+                Report.countDocuments({ created_at: { $gte: since } }),
+                Post.countDocuments({ created_at: { $gte: since }, status: 'hidden' }),
+                Post.countDocuments({ created_at: { $gte: since }, comments_count: { $gt: 0 } }),
+                Post.countDocuments({ created_at: { $gte: since }, likes: 0, comments_count: 0 })
+            ]);
+
+            return {
+                success: true,
+                stats: {
+                    total_posts: totalPosts,
+                    total_comments: totalComments,
+                    total_reactions: reactionsAgg[0]?.total || 0,
+                    reported_posts_count: reportedPosts,
+                    auto_hidden_count: autoHidden,
+                    posts_with_replies: postsWithReplies,
+                    posts_with_zero_interaction: silentPosts
+                }
+            };
+        } catch (error) {
+            console.error('[Admin] Live stats error:', error);
+            return reply.code(500).send({ error: error.message });
+        }
+    });
+
     // GET /admin/settings - Retrieve all system settings
     fastify.get('/admin/settings', {
         preHandler: checkAdminToken

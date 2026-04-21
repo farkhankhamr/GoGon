@@ -185,11 +185,13 @@ export default function AdminDashboard() {
     const [token, setToken] = useState(localStorage.getItem('adminToken') || HARDCODED_TOKEN);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [summaries, setSummaries] = useState([]);
+    const [liveStats, setLiveStats] = useState(null);
     const [selectedDay, setSelectedDay] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [settings, setSettings] = useState({ chat_enabled: false });
     const [savingSetting, setSavingSetting] = useState(false);
+    const [runningSummary, setRunningSummary] = useState(false);
 
     // Initial Check
     useEffect(() => {
@@ -238,9 +240,41 @@ export default function AdminDashboard() {
         }
     };
 
+    const fetchLiveStats = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/live-stats`, {
+                headers: { 'x-admin-token': token }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setLiveStats(data.stats);
+            }
+        } catch (err) {
+            console.error('Failed to fetch live stats:', err);
+        }
+    };
+
+    const handleRunSummary = async () => {
+        try {
+            setRunningSummary(true);
+            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/run-daily-summary`, {
+                method: 'POST',
+                headers: { 'x-admin-token': token, 'Content-Type': 'application/json' }
+            });
+            if (res.ok) {
+                verifyToken(token); // Refresh summaries
+            }
+        } catch (err) {
+            console.error('Failed to run summary:', err);
+        } finally {
+            setRunningSummary(false);
+        }
+    };
+
     useEffect(() => {
         if (isAuthenticated) {
             fetchAdminSettings();
+            fetchLiveStats();
         }
     }, [isAuthenticated]);
 
@@ -274,21 +308,21 @@ export default function AdminDashboard() {
     // --- Derived Metrics (Latest Day) ---
     const latest = summaries.length > 0 ? summaries[summaries.length - 1] : null;
 
-    // Pulse Metrics
-    const postsCreated = latest?.totals?.total_posts || 0;
-    const postsWithReplies = latest?.totals?.posts_with_replies || 0; // New Backend Field
+    // Pulse Metrics - use live stats if available, fall back to latest summary
+    const postsCreated = liveStats?.total_posts ?? latest?.totals?.total_posts ?? 0;
+    const postsWithReplies = liveStats?.posts_with_replies ?? latest?.totals?.posts_with_replies ?? 0;
     const pctWithReplies = postsCreated > 0 ? Math.round((postsWithReplies / postsCreated) * 100) : 0;
-    const silentPosts = latest?.totals?.posts_with_zero_interaction || 0; // New Backend Field
+    const silentPosts = liveStats?.posts_with_zero_interaction ?? latest?.totals?.posts_with_zero_interaction ?? 0;
     const silentRate = postsCreated > 0 ? Math.round((silentPosts / postsCreated) * 100) : 0;
 
     // Funnel Metrics (Approximate Views for MVP)
     const views = Math.round(postsCreated * 12.5); // Heuristic: ~12.5 views per post avg
-    const totalComments = latest?.totals?.total_comments || 0;
-    const totalReactions = latest?.totals?.total_reactions || 0;
+    const totalComments = liveStats?.total_comments ?? latest?.totals?.total_comments ?? 0;
+    const totalReactions = liveStats?.total_reactions ?? latest?.totals?.total_reactions ?? 0;
 
     // Safety Metrics
-    const reportedPosts = latest?.safety?.reported_posts_count || 0;
-    const autoHidden = latest?.safety?.auto_hidden_count || 0;
+    const reportedPosts = liveStats?.reported_posts_count ?? latest?.safety?.reported_posts_count ?? 0;
+    const autoHidden = liveStats?.auto_hidden_count ?? latest?.safety?.auto_hidden_count ?? 0;
 
     // Chart Data Preparation
     const chartData = summaries.map(s => ({
@@ -376,7 +410,20 @@ export default function AdminDashboard() {
 
                 {/* 1. COMMUNITY PULSE */}
                 <div className="mb-12">
-                    <SectionHeader title="Community Pulse" subtitle="Real-time health indicators (24h)" />
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Community Pulse</h3>
+                            <p className="text-sm text-slate-400">Real-time health indicators (24h)</p>
+                        </div>
+                        <button
+                            onClick={handleRunSummary}
+                            disabled={runningSummary}
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 disabled:opacity-50 transition"
+                        >
+                            {runningSummary ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+                            {runningSummary ? 'Running...' : 'Generate Summary'}
+                        </button>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <Card className="p-6">
                             <MetricValue
